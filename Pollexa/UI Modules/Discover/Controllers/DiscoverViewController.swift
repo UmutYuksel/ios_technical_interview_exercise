@@ -10,26 +10,22 @@ import UIKit
 class DiscoverViewController: UIViewController {
 
     
+
+    @IBOutlet weak var activePollsLabel: UILabel!
     @IBOutlet weak var pollsCollectionView: UICollectionView!
     
     // MARK: - Properties
     private let postProvider = PostProvider.shared
+    private let viewModel = DiscoverViewModel()
 
     // MARK: - Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupCollectionView()
-        
-        postProvider.fetchAll { result in
-            switch result {
-            case .success(let posts):
-                print(posts)
-                
-            case .failure(let error):
-                debugPrint(error.localizedDescription)
-            }
-        }
+        viewModel.fetchPosts(collectionView: pollsCollectionView)
+        viewModel.activatePollsButton(label: activePollsLabel)
+       
     }
     
     func setupCollectionView() {
@@ -40,11 +36,13 @@ class DiscoverViewController: UIViewController {
 
 extension DiscoverViewController : UICollectionViewDelegate , UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return viewModel.posts.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PollCollectionViewCell", for: indexPath) as! PollsCollectionViewCell
+        let posts = viewModel.posts[indexPath.row]
+        cell.configure(with: posts)
         return cell
     }
     

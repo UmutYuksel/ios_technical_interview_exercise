@@ -8,24 +8,27 @@
 import UIKit
 
 extension Post {
-    
-    struct Option: Decodable {
+
+    public struct Option: Decodable {
         
         // MARK: - Types
-        enum CodingKeys: String, CodingKey {
+        public enum CodingKeys: String, CodingKey {
             case id
             case imageName
+            case voted
         }
         
         // MARK: - Properties
-        let id: String
-        let image: UIImage
+        public let id: String
+        public let image: UIImage
+        public var voted: Int?
         
         // MARK: - Life Cycle
-        init(from decoder: any Decoder) throws {
+        public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
             id = try container.decode(String.self, forKey: .id)
+            voted = try container.decodeIfPresent(Int.self, forKey: .voted)
             
             let imageName = try container.decode(
                 String.self,
@@ -40,6 +43,12 @@ extension Post {
                     debugDescription: "An image with name \(imageName) could not be loaded from the bundle.")
                 )
             }
+        }
+        // MARK: - Life Cycle
+        public init(id: String, image: UIImage, voted: Int) {
+            self.id = id
+            self.image = image
+            self.voted = voted
         }
     }
 }

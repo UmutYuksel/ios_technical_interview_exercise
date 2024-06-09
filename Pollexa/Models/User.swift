@@ -7,22 +7,22 @@
 
 import UIKit
 
-struct User {
+public struct User : Decodable{
     
     // MARK: - Types
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case id
         case username
         case imageName
     }
     
     // MARK: - Properties
-    let id: String
-    let username: String
-    let image: UIImage
+    public let id: String
+    public let username: String
+    public let image: UIImage
     
     // MARK: - Life Cycle
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         id = try container.decode(String.self, forKey: .id)
@@ -38,5 +38,12 @@ struct User {
                 debugDescription: "An image with name \(imageName) could not be loaded from the bundle.")
             )
         }
+    }
+    
+    public init(id: String, username: String, image: UIImage) {
+        self.id = id
+        self.username = username
+        self.image = image
+        
     }
 }
