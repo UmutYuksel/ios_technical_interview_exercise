@@ -26,7 +26,7 @@ public struct Post: Decodable {
     public let id: String
     public let createdAt: Date
     public let content: String
-    public let options: [Option]
+    public var options: [Option]
     public let user : User?
     public var lastVoteAt: Date?
     public var votedBy : [VotedBy]?
