@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UIKit
 
 protocol DiscoverViewModelDelegate: AnyObject {
     func didUpdatePost()
@@ -14,11 +13,10 @@ protocol DiscoverViewModelDelegate: AnyObject {
 
 final class DiscoverViewModel {
     
-    private let postProvider: PostProvider
+    // MARK: - Properties
     
+    private let postProvider: PostProvider
     weak var delegate: DiscoverViewModelDelegate?
-    var optionOneVotes: Int = 0
-    var optionTwoVotes: Int = 0
     
     var posts: [Post] = [] {
         didSet {
@@ -26,9 +24,13 @@ final class DiscoverViewModel {
         }
     }
     
+    // MARK: - Initialization
+    
     init(postProvider: PostProvider) {
         self.postProvider = postProvider
     }
+    
+    // MARK: - Methods
     
     func fetchPosts() {
         postProvider.fetchAll { [weak self] result in
@@ -36,7 +38,6 @@ final class DiscoverViewModel {
             switch result {
             case .success(let fetchedPosts):
                 self.posts = fetchedPosts
-                delegate?.didUpdatePost()
             case .failure(let error):
                 debugPrint(error.localizedDescription)
             }
@@ -49,36 +50,36 @@ final class DiscoverViewModel {
     
     func voteForOption(pollIndex: Int, optionIndex: Int) {
         guard pollIndex < posts.count else {
-            print("Geçersiz Anket İndeksi")
+            print("Invalid Poll Index")
             return
         }
         
         var poll = posts[pollIndex]
         
         guard optionIndex < poll.options.count else {
-            print("Geçersiz option indeksi")
+            print("Invalid Option Index")
             return
         }
-            
-        // Oy sayısını güncelle
+        
+        // Update vote count
         if let votedCount = poll.options[optionIndex].voted {
             poll.options[optionIndex].voted = votedCount + 1
         } else {
             poll.options[optionIndex].voted = 1
         }
-            
-        // Toplam oy sayısını güncelle
+        
+        // Update total vote count
         if poll.totalVote != nil {
             poll.totalVote! += 1
         } else {
             poll.totalVote = 1
         }
-            
-        // Son oy zamanını güncelle
-        poll.lastVoteAt = Date() // Şu anki zamanı atıyoruz
         
-        posts[pollIndex] = poll // Güncellenmiş poll'u tekrar listeye ekle
-            
+        // Update last vote time
+        poll.lastVoteAt = Date()
+        
+        posts[pollIndex] = poll
+        
         delegate?.didUpdatePost()
     }
 }

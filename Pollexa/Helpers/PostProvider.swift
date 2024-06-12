@@ -17,9 +17,6 @@ public protocol PostProviderProtocol {
 
 class PostProvider : PostProviderProtocol, PostProviderType{
     
-    
-    
-    
     // MARK: - Properties
     static var shared: PostProviderType = PostProvider(fileName: "posts")
     private let filename: String

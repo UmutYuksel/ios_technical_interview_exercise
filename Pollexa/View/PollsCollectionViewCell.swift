@@ -7,14 +7,13 @@
 
 import UIKit
 
+// MARK: - PollsCollectionViewCellDelegate
 protocol PollsCollectionViewCellDelegate: AnyObject {
     func voteForOption(pollIndex: Int, optionIndex: Int)
 }
 
 class PollsCollectionViewCell: UICollectionViewCell {
-    
-    @IBOutlet weak var optionTwoButton: UIButton!
-    @IBOutlet weak var optionOneButton: UIButton!
+    // MARK: Outlets
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var userNameLabel: UILabel!
     @IBOutlet weak var createdDateLabel: UILabel!
@@ -24,8 +23,11 @@ class PollsCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var optionTwoImageView: UIImageView!
     @IBOutlet weak var totalVoteCountLabel: UILabel!
     
+    // MARK: Properties
     var optionOneLabel: UILabel!
     var optionTwoLabel : UILabel!
+    var optionOneButton: UIButton!
+    var optionTwoButton: UIButton!
 
     
     var pollIndex : Int?
@@ -36,30 +38,46 @@ class PollsCollectionViewCell: UICollectionViewCell {
                 configure(with: viewModel)
             }
         }
+    // MARK: Lifecycle Methods
     
     override func awakeFromNib() {
         super.awakeFromNib()
-            
-        addTapGestureOptionImageViews()
-        setupLabels()
-        makeCircularLikeButtons()
         
+
+        userImageView.translatesAutoresizingMaskIntoConstraints = false
+        userNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        createdDateLabel.translatesAutoresizingMaskIntoConstraints = false
+        lastVoteLabel.translatesAutoresizingMaskIntoConstraints = false
+        pollDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        optionOneImageView.translatesAutoresizingMaskIntoConstraints = false
+        optionTwoImageView.translatesAutoresizingMaskIntoConstraints = false
+        totalVoteCountLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        addTapGestureOptionImageViews()
+        setupButtons()
+        setupLabels()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        optionOneButton.makeCircular()
+        optionTwoButton.makeCircular()
+    }
+
+    
     private func addTapGestureOptionImageViews() {
-        // optionOneImageView'a tıklama tanıyıcı ekle
+        
         let tapGestureOne = UITapGestureRecognizer(target: self, action: #selector(optionOneTapped))
         optionOneImageView.addGestureRecognizer(tapGestureOne)
         optionOneImageView.isUserInteractionEnabled = true
             
-        // optionTwoImageView'a tıklama tanıyıcı ekle
         let tapGestureTwo = UITapGestureRecognizer(target: self, action: #selector(optionTwoTapped))
         optionTwoImageView.addGestureRecognizer(tapGestureTwo)
         optionTwoImageView.isUserInteractionEnabled = true
     }
     
     private func setupLabels() {
-        // UILabel oluştur ve ayarla
+        
         optionOneLabel = UILabel()
         optionOneLabel.translatesAutoresizingMaskIntoConstraints = false
         optionOneLabel.backgroundColor = UIColor.clear
@@ -67,9 +85,9 @@ class PollsCollectionViewCell: UICollectionViewCell {
         optionOneLabel.textAlignment = .right
         contentView.addSubview(optionOneLabel)
         
-        // OptionTwoLabel için özelliklerini ayarla
+
         optionTwoLabel = UILabel()
-        optionTwoLabel.textAlignment = .right // Sağa hizalı
+        optionTwoLabel.textAlignment = .right
         optionTwoLabel.backgroundColor = UIColor.clear
         optionTwoLabel.textColor = .white
         optionTwoLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -80,40 +98,68 @@ class PollsCollectionViewCell: UICollectionViewCell {
         optionTwoLabel.bottomAnchor.constraint(equalTo: optionTwoImageView.bottomAnchor, constant: -10)
         ])
                 
-        // optionOneLabel için kısıtlamaları ayarla
+
         NSLayoutConstraint.activate([
         optionOneLabel.trailingAnchor.constraint(equalTo: optionOneImageView.trailingAnchor, constant: -10),
         optionOneLabel.bottomAnchor.constraint(equalTo: optionOneImageView.bottomAnchor, constant: -10)
         ])
     }
     
-    private func makeCircularLikeButtons() {
-        optionOneButton.makeCircular()
-        optionTwoButton.makeCircular()
+    private func setupButtons() {
+        // Option One Button
+        optionOneButton = UIButton(type: .system)
+        optionOneButton.translatesAutoresizingMaskIntoConstraints = false
+        optionOneButton.setBackgroundImage(UIImage(systemName: "hand.thumbsup.fill"), for: .normal)
+        optionOneButton.backgroundColor = .white
+        contentView.addSubview(optionOneButton)
+        
+        // Option Two Button
+        optionTwoButton = UIButton(type: .system)
+        optionTwoButton.translatesAutoresizingMaskIntoConstraints = false
+        optionTwoButton.setBackgroundImage(UIImage(systemName: "hand.thumbsup.fill"), for: .normal)
+        optionTwoButton.backgroundColor = .white
+        
+        contentView.addSubview(optionTwoButton)
+    
+        // Auto Layout Constraints for Option One Button
+        NSLayoutConstraint.activate([
+            optionOneButton.widthAnchor.constraint(equalToConstant: 30),
+            optionOneButton.heightAnchor.constraint(equalToConstant: 30),
+            optionOneButton.leadingAnchor.constraint(equalTo: optionOneImageView.leadingAnchor, constant: 10),
+            optionOneButton.bottomAnchor.constraint(equalTo: optionOneImageView.bottomAnchor, constant: -10)
+        ])
+            
+        // Auto Layout Constraints for Option Two Button
+        NSLayoutConstraint.activate([
+            optionTwoButton.widthAnchor.constraint(equalToConstant: 30),
+            optionTwoButton.heightAnchor.constraint(equalToConstant: 30),
+            optionTwoButton.leadingAnchor.constraint(equalTo: optionTwoImageView.leadingAnchor, constant: 10),
+            optionTwoButton.bottomAnchor.constraint(equalTo: optionTwoImageView.bottomAnchor, constant: -10)
+        ])
     }
     
-    @objc func optionOneTapped() {
-           if let pollIndex = pollIndex {
-               delegate?.voteForOption(pollIndex: pollIndex, optionIndex: 0)
-           } else {
-               print("pollIndex is nil for option 1")
-           }
-       }
-       
-       @objc func optionTwoTapped() {
-           if let pollIndex = pollIndex {
-
-               delegate?.voteForOption(pollIndex: pollIndex, optionIndex: 1)
-           } else {
-               print("pollIndex is nil for option 2")
-           }
-       }
+    // MARK: Action Methods
     
+    @objc func optionOneTapped() {
+        guard let pollIndex = pollIndex else {
+            print("pollIndex is nil for option 1")
+            return
+        }
+        delegate?.voteForOption(pollIndex: pollIndex, optionIndex: 0)
+    }
+
+    @objc func optionTwoTapped() {
+        guard let pollIndex = pollIndex else {
+            print("pollIndex is nil for option 2")
+            return
+        }
+        delegate?.voteForOption(pollIndex: pollIndex, optionIndex: 1)
+    }
+    
+    // MARK: Configure Method
     func configure(with viewModel: PostCollectionViewModel?) {
         
         guard let viewModel = viewModel else {
-            // View model nil ise, hücreyi boş duruma getir
-            // Örneğin, imageViews, labels ve diğer özelliklerin sıfırlanması
             return
         }
             
@@ -124,10 +170,11 @@ class PollsCollectionViewCell: UICollectionViewCell {
         optionOneImageView.image = viewModel.optionOneImage
         optionTwoImageView.image = viewModel.optionTwoImage
         if viewModel.optionOnePercentage == "0%" && viewModel.optionTwoPercentage == "0%" {
-            optionOneLabel.isHidden = true
-            optionTwoLabel.isHidden = true
             optionOneButton.isHidden = false
             optionTwoButton.isHidden = false
+            optionOneLabel.isHidden = true
+            optionTwoLabel.isHidden = true
+
         } else {
             optionOneButton.isHidden = true
             optionTwoButton.isHidden = true
