@@ -16,19 +16,20 @@ class DiscoverViewController: UIViewController, PollsCollectionViewCellDelegate 
     // MARK: - Properties
     private let viewModel = DiscoverViewModel(postProvider: PostProvider.shared as! PostProvider)
 
-        // MARK: - Life Cycle
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            
-            setupCollectionView()
-            viewModel.delegate = self
-            viewModel.fetchPosts()
-        }
+    // MARK: - Life Cycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
-        func setupCollectionView() {
-            pollsCollectionView.delegate = self
-            pollsCollectionView.dataSource = self
-        }
+        setupCollectionView()
+        viewModel.delegate = self
+        viewModel.fetchPosts()
+
+    }
+    
+    private func setupCollectionView() {
+        pollsCollectionView.delegate = self
+        pollsCollectionView.dataSource = self
+    }
     
     @IBAction func addButtonPressed(_ sender: Any) {
         print("Add Button Pressed")
@@ -48,7 +49,7 @@ class DiscoverViewController: UIViewController, PollsCollectionViewCellDelegate 
     }
 
     // MARK: - UICollectionViewDataSource and UICollectionViewDelegate
-    extension DiscoverViewController: UICollectionViewDelegate , UICollectionViewDataSource {
+    extension DiscoverViewController: UICollectionViewDelegate , UICollectionViewDataSource , UICollectionViewDelegateFlowLayout {
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
             return viewModel.posts.count
         }
@@ -56,11 +57,25 @@ class DiscoverViewController: UIViewController, PollsCollectionViewCellDelegate 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PollCollectionViewCell", for: indexPath) as! PollsCollectionViewCell
             let post = viewModel.posts[indexPath.row]
-            cell.configure(with: post, pollIndex: indexPath.row, delegate: self)
+            let postViewModel = PostCollectionViewModel(post: post)
+            cell.configure(with: postViewModel)
+            cell.pollIndex = indexPath.row
+            cell.delegate = self
             return cell
         }
+
+//        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PollCollectionViewCell", for: indexPath) as! PollsCollectionViewCell
+//            let post = viewModel.posts[indexPath.row]
+//            cell.configure(with: post, pollIndex: indexPath.row, delegate: self)
+//            return cell
+//        }
+        
+        func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+                return CGSize(width: collectionView.frame.width, height: 319)
+            }
         
         func voteForOption(pollIndex: Int, optionIndex: Int) {
                 viewModel.voteForOption(pollIndex: pollIndex, optionIndex: optionIndex)
-            }
+        }
 }

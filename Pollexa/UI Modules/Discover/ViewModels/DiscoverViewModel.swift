@@ -17,6 +17,8 @@ final class DiscoverViewModel {
     private let postProvider: PostProvider
     
     weak var delegate: DiscoverViewModelDelegate?
+    var optionOneVotes: Int = 0
+    var optionTwoVotes: Int = 0
     
     var posts: [Post] = [] {
         didSet {

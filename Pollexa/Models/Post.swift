@@ -45,3 +45,22 @@ public struct Post: Decodable {
         self.totalVote = totalVote
     }
 }
+
+extension Post {
+    var optionPercentage: [Double] {
+        guard let totalVoteCount = totalVote, totalVoteCount > 0 else {
+            return []
+        }
+        
+        return options.map { option in
+            guard let votedCount = option.voted else {
+                return 0
+            }
+            return Double(votedCount) / Double(totalVoteCount) * 100.0
+        }
+    }
+}
+
+
+
+

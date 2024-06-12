@@ -13,6 +13,8 @@ protocol PollsCollectionViewCellDelegate: AnyObject {
 
 class PollsCollectionViewCell: UICollectionViewCell {
     
+    @IBOutlet weak var optionTwoButton: UIButton!
+    @IBOutlet weak var optionOneButton: UIButton!
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var userNameLabel: UILabel!
     @IBOutlet weak var createdDateLabel: UILabel!
@@ -22,22 +24,73 @@ class PollsCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var optionTwoImageView: UIImageView!
     @IBOutlet weak var totalVoteCountLabel: UILabel!
     
+    var optionOneLabel: UILabel!
+    var optionTwoLabel : UILabel!
+
+    
     var pollIndex : Int?
     var delegate : PollsCollectionViewCellDelegate?
     
-    override func awakeFromNib() {
-            super.awakeFromNib()
-            
-            // optionOneImageView'a tıklama tanıyıcı ekle
-            let tapGestureOne = UITapGestureRecognizer(target: self, action: #selector(optionOneTapped))
-            optionOneImageView.addGestureRecognizer(tapGestureOne)
-            optionOneImageView.isUserInteractionEnabled = true
-            
-            // optionTwoImageView'a tıklama tanıyıcı ekle
-            let tapGestureTwo = UITapGestureRecognizer(target: self, action: #selector(optionTwoTapped))
-            optionTwoImageView.addGestureRecognizer(tapGestureTwo)
-            optionTwoImageView.isUserInteractionEnabled = true
+    var viewModel: PostCollectionViewModel? {
+            didSet {
+                configure(with: viewModel)
+            }
         }
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+            
+        addTapGestureOptionImageViews()
+        setupLabels()
+        makeCircularLikeButtons()
+        
+    }
+    
+    private func addTapGestureOptionImageViews() {
+        // optionOneImageView'a tıklama tanıyıcı ekle
+        let tapGestureOne = UITapGestureRecognizer(target: self, action: #selector(optionOneTapped))
+        optionOneImageView.addGestureRecognizer(tapGestureOne)
+        optionOneImageView.isUserInteractionEnabled = true
+            
+        // optionTwoImageView'a tıklama tanıyıcı ekle
+        let tapGestureTwo = UITapGestureRecognizer(target: self, action: #selector(optionTwoTapped))
+        optionTwoImageView.addGestureRecognizer(tapGestureTwo)
+        optionTwoImageView.isUserInteractionEnabled = true
+    }
+    
+    private func setupLabels() {
+        // UILabel oluştur ve ayarla
+        optionOneLabel = UILabel()
+        optionOneLabel.translatesAutoresizingMaskIntoConstraints = false
+        optionOneLabel.backgroundColor = UIColor.clear
+        optionOneLabel.textColor = .white
+        optionOneLabel.textAlignment = .right
+        contentView.addSubview(optionOneLabel)
+        
+        // OptionTwoLabel için özelliklerini ayarla
+        optionTwoLabel = UILabel()
+        optionTwoLabel.textAlignment = .right // Sağa hizalı
+        optionTwoLabel.backgroundColor = UIColor.clear
+        optionTwoLabel.textColor = .white
+        optionTwoLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(optionTwoLabel)
+            
+        NSLayoutConstraint.activate([
+        optionTwoLabel.trailingAnchor.constraint(equalTo: optionTwoImageView.trailingAnchor, constant: -10),
+        optionTwoLabel.bottomAnchor.constraint(equalTo: optionTwoImageView.bottomAnchor, constant: -10)
+        ])
+                
+        // optionOneLabel için kısıtlamaları ayarla
+        NSLayoutConstraint.activate([
+        optionOneLabel.trailingAnchor.constraint(equalTo: optionOneImageView.trailingAnchor, constant: -10),
+        optionOneLabel.bottomAnchor.constraint(equalTo: optionOneImageView.bottomAnchor, constant: -10)
+        ])
+    }
+    
+    private func makeCircularLikeButtons() {
+        optionOneButton.makeCircular()
+        optionTwoButton.makeCircular()
+    }
     
     @objc func optionOneTapped() {
            if let pollIndex = pollIndex {
@@ -56,23 +109,38 @@ class PollsCollectionViewCell: UICollectionViewCell {
            }
        }
     
-    func configure(with post: Post, pollIndex: Int, delegate: PollsCollectionViewCellDelegate) {
-        self.pollIndex = pollIndex
-        self.delegate = delegate
-        // Tarih bilgileri
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd"
-        createdDateLabel.text = "\(dateFormatter.string(from: post.createdAt)) days ago"
-        // Kullanıcı bilgileri
-        userImageView.image = post.user?.image
-        userNameLabel.text = post.user?.username
-        pollDescriptionLabel.text = post.content
-        optionOneImageView.image = post.options[0].image
-        optionTwoImageView.image = post.options[1].image
-        totalVoteCountLabel.text = "\(post.totalVote ?? 0) Total Votes"
+    func configure(with viewModel: PostCollectionViewModel?) {
         
-        if let lastVotedAt = post.lastVoteAt {
-            let timeInterval = Date().timeIntervalSince(lastVotedAt)
+        guard let viewModel = viewModel else {
+            // View model nil ise, hücreyi boş duruma getir
+            // Örneğin, imageViews, labels ve diğer özelliklerin sıfırlanması
+            return
+        }
+            
+        createdDateLabel.text = viewModel.createdAt
+        userImageView.image = viewModel.userImage
+        userNameLabel.text = viewModel.username
+        pollDescriptionLabel.text = viewModel.content
+        optionOneImageView.image = viewModel.optionOneImage
+        optionTwoImageView.image = viewModel.optionTwoImage
+        if viewModel.optionOnePercentage == "0%" && viewModel.optionTwoPercentage == "0%" {
+            optionOneLabel.isHidden = true
+            optionTwoLabel.isHidden = true
+            optionOneButton.isHidden = false
+            optionTwoButton.isHidden = false
+        } else {
+            optionOneButton.isHidden = true
+            optionTwoButton.isHidden = true
+            optionOneLabel.isHidden = false
+            optionTwoLabel.isHidden = false
+            optionOneLabel.text = viewModel.optionOnePercentage
+            optionTwoLabel.text = viewModel.optionTwoPercentage
+        }
+
+        totalVoteCountLabel.text = "\(viewModel.totalVotes) Total Votes"
+            
+        if let lastVoteAt = viewModel.lastVoteAt {
+            let timeInterval = Date().timeIntervalSince(lastVoteAt)
             
             if timeInterval < 60 {
                 let seconds = Int(timeInterval)
@@ -90,6 +158,7 @@ class PollsCollectionViewCell: UICollectionViewCell {
         } else {
             lastVoteLabel.text = "No votes yet"
         }
-        
     }
+    
+    
 }
